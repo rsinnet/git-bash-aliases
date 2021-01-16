@@ -4,8 +4,7 @@
 #
 # For a local branch named `branch`, this script performs:
 #   git reset --hard origin/branch
-function gro
-{
+gro() {
   local -r RED=1
   local -r BLUE=4
   LOCAL_BRANCH="$(git branch --show-current 2>/dev/null)"
@@ -54,20 +53,17 @@ function gro
 #   glo origin/develop
 #   glo -2
 #   glo -3 develop
-function glo
-{
+glo() {
   git log --oneline $*
 }
 
 # Rebase the current branch onto origin/develop with interactive autosquash.
-function grod
-{
+grod() {
   git rebase --interactive --autosquash origin/develop
 }
 
 # Rebase the current branch onto the origin.
-function gro
-{
+gro() {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
   ORIGIN_BRANCH="origin/${LOCAL_BRANCH}"
@@ -76,26 +72,22 @@ function gro
 }
 
 # Show the git diff with origin/develop
-function gdod
-{
+gdod() {
   git diff origin/develop "$@"
 }
 
 # Show the git diff --stat with origin/develop
-function gdsod
-{
+gdsod() {
   gdod --stat "$@"
 }
 
 # Show the git diff --stat with the origin.
-function gdso
-{
+gdso() {
   gdso --stat "$@"
 }
 
 # Show the git diff with the origin.
-function gdo
-{
+gdo() {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
   ORIGIN_BRANCH="origin/${LOCAL_BRANCH}"
@@ -104,25 +96,25 @@ function gdo
 }
 
 # Pull from the remote with git pull --ff-only
-function gpf {
+gpf () {
   git pull --ff-only "$@"
 }
 
 # Push the branch to origin and set the upstream.
-function gposu {
+gposu () {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
   git push --set-upstream origin ${LOCAL_BRANCH} "$@"
 }
 
 # Force-push the branch to origin.
-function gpof {
+gpof () {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
   git push --force-with-lease origin ${LOCAL_BRANCH} "$@"
 }
 
-function reinstall-git-bash-completion {
+reinstall-git-bash-completion () {
   local git_version=$(git --version | sed 's/^.* \([0-9\\.]\+$\)/\1/g')
   rm -f /tmp/git-completion.bash
   wget https://raw.githubusercontent.com/git/git/v${git_version}/contrib/completion/git-completion.bash -O /tmp/git-completion.bash
@@ -130,8 +122,7 @@ function reinstall-git-bash-completion {
 }
 
 # Return the current branch of the worktree.
-function __get_local_branch
-{
+__get_local_branch() {
   LOCAL_BRANCH="$(git branch --show-current 2>/dev/null)"
   if [ $? -ne 0 ] ; then
     >&2 echo "Failed to read current branch. Are you in a git repository with the HEAD pointing to a local branch?"
@@ -140,8 +131,7 @@ function __get_local_branch
   echo "${LOCAL_BRANCH}"
 }
 
-function __glo_complete
-{
+__glo_complete() {
   __git_complete_refs --cur="${COMP_WORDS[COMP_CWORD]}" --sfx=""
 }
 complete -F __glo_complete -o default glo
