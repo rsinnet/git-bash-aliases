@@ -71,18 +71,43 @@ glo() {
   git log --oneline $*
 }
 
+# @description `git rebase --interactive --autosquash`
+#
+#
+# Mnemonic: *git rebase interactive autosquash*
+#
+# @example
+#     gr origin/develop
+gria() {
+  git rebase --interactive --autosquash "$@"
+}
+
 # @description `git rebase --interactive --autosquash origin/develop`
+#
+# @example
+#     grod
 grod() {
-  git rebase --interactive --autosquash origin/develop
+  gria "origin/develop" "$@"
+}
+
+# @description `git rebase --interactive --autosquash origin/master`
+#
+# @example
+#     grom
+grom() {
+  gria "origin/master" "$@"
 }
 
 # @description `git rebase --interactive --autosquash` with the current branch onto the branch of the same name on `origin`
+#
+# @example
+#     gro
 gro() {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
   ORIGIN_BRANCH="origin/${LOCAL_BRANCH}"
 
-  git rebase --interactive --autosquash ${ORIGIN_BRANCH} "$@"
+  gria "${ORIGIN_BRANCH}" "$@"
 }
 
 # @description `git diff origin/develop`
@@ -101,6 +126,22 @@ gdsod() {
   gdod --stat "$@"
 }
 
+# @description `git diff origin/develop`
+#
+# @example
+#     gdom
+gdom() {
+  git diff origin/master "$@"
+}
+
+# @description `git diff --stat origin/master`
+#
+# @example
+#     gdsom
+gdsom() {
+  gdom --stat "$@"
+}
+
 # @description `git diff` with the branch of the same name on `origin`
 #
 # @example
@@ -112,10 +153,10 @@ gdo() {
   [ $? -ne 0 ] && return 1
   ORIGIN_BRANCH="origin/${LOCAL_BRANCH}"
 
-  git diff ${ORIGIN_BRANCH} "$@"
+  git diff "${ORIGIN_BRANCH}" "$@"
 }
 
-# @description Show `git diff --stat` with the branch of the same name on `origin`.
+# @description `git diff --stat` with the branch of the same name on `origin`
 #
 # @example
 #     gdso
@@ -125,7 +166,7 @@ gdso() {
   gdo --stat "$@"
 }
 
-# @description `git pull --ff-only`.
+# @description `git pull --ff-only`
 #
 # @example
 #     gpf
@@ -142,7 +183,7 @@ gpf () {
 gposu () {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
-  git push --set-upstream origin ${LOCAL_BRANCH} "$@"
+  git push --set-upstream origin "${LOCAL_BRANCH}" "$@"
 }
 
 # @description `git push --force-with-lease origin` with the current branch to the upstream branch.
@@ -156,7 +197,7 @@ gposu () {
 gpof () {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
-  git push --force-with-lease origin ${LOCAL_BRANCH} "$@"
+  git push --force-with-lease origin "${LOCAL_BRANCH}" "$@"
 }
 
 # @description Download and reinstall bash completion for git.
