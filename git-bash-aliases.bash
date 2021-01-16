@@ -1,9 +1,27 @@
-# Reset the current branch to the one of the same name on the origin.
+#!/bin/bash
+# @name git-bash-aliases
+# @brief Short aliases for commonly used git commands.
+# @description
+# These aliases allow you to quickly perform everyday commands with git.
+
+# @description `git reset` the current branch to the one of the same name on `origin`
 #
-# Mnemonic: 'git reset origin'
+# Mnemonic: *git reset origin*
 #
 # For a local branch named `branch`, this script performs:
-#   git reset --hard origin/branch
+# ```
+# git reset --hard origin/branch
+# ```
+#
+# Arguments are forwarded to `git reset`.
+#
+# @example
+#     gro
+#
+# @exitcode 0 Successful.
+# @exitcode 1 Unable to read current branch.
+# @exitcode 2 Unable to read user input.
+# @exitcode 3 Operation canceled by user.
 gro() {
   local -r RED=1
   local -r BLUE=4
@@ -43,26 +61,22 @@ gro() {
   return 3
 }
 
-# Show the one-line git log for the specified number of entries.
+# @description `git log --oneline`
 #
-# Args:
-#   -r (optional)
-#     A git refspec.
-#
-# Usage:
-#   glo origin/develop
-#   glo -2
-#   glo -3 develop
+# @example
+# glo origin/develop
+# glo -2
+# glo -3 develop
 glo() {
   git log --oneline $*
 }
 
-# Rebase the current branch onto origin/develop with interactive autosquash.
+# @description `git rebase --interactive --autosquash origin/develop`
 grod() {
   git rebase --interactive --autosquash origin/develop
 }
 
-# Rebase the current branch onto the origin.
+# @description `git rebase --interactive --autosquash` with the current branch onto the branch of the same name on `origin`
 gro() {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
@@ -71,22 +85,28 @@ gro() {
   git rebase --interactive --autosquash ${ORIGIN_BRANCH} "$@"
 }
 
-# Show the git diff with origin/develop
+# @description `git diff origin/develop`
+#
+# @example
+#     gdod
 gdod() {
   git diff origin/develop "$@"
 }
 
-# Show the git diff --stat with origin/develop
+# @description `git diff --stat origin/develop`
+#
+# @example
+#     gdsod
 gdsod() {
   gdod --stat "$@"
 }
 
-# Show the git diff --stat with the origin.
-gdso() {
-  gdso --stat "$@"
-}
-
-# Show the git diff with the origin.
+# @description `git diff` with the branch of the same name on `origin`
+#
+# @example
+#     gdo
+#
+# @exitcode 1 Unable to read current branch.
 gdo() {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
@@ -95,25 +115,66 @@ gdo() {
   git diff ${ORIGIN_BRANCH} "$@"
 }
 
-# Pull from the remote with git pull --ff-only
+# @description Show `git diff --stat` with the branch of the same name on `origin`.
+#
+# @example
+#     gdso
+#
+# @exitcode 1 Unable to read current branch.
+gdso() {
+  gdo --stat "$@"
+}
+
+# @description `git pull --ff-only`.
+#
+# @example
+#     gpf
 gpf () {
   git pull --ff-only "$@"
 }
 
-# Push the branch to origin and set the upstream.
+# @description Push the branch to origin and set the upstream.
+#
+# @example
+#     gposu -f
+#
+# @exitcode 1 Unable to read current branch.
 gposu () {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
   git push --set-upstream origin ${LOCAL_BRANCH} "$@"
 }
 
-# Force-push the branch to origin.
+# @description `git push --force-with-lease origin` with the current branch to the upstream branch.
+#
+# If the upstream branch is not set, this command may fail.
+#
+# @example
+#     gpof
+#
+# @exitcode 1 Unable to read current branch.
 gpof () {
   LOCAL_BRANCH=$(__get_local_branch)
   [ $? -ne 0 ] && return 1
   git push --force-with-lease origin ${LOCAL_BRANCH} "$@"
 }
 
+# @description Download and reinstall bash completion for git.
+#
+# Periodically, git bash completions seem to stop working. One fix is to
+# download the bash script from the public repo and copy it over the
+# currently installed file. This command does this, replacing, the
+# existing command.
+#
+# To fix an existing bash session after this command has been run:
+#
+# ```
+#     source ${HOME}/.bashrc
+# ```
+#
+# @example
+#     reinstall-git-bash-completion
+#     source ${HOME}/.bashrc
 reinstall-git-bash-completion () {
   local git_version=$(git --version | sed 's/^.* \([0-9\\.]\+$\)/\1/g')
   rm -f /tmp/git-completion.bash
@@ -121,7 +182,10 @@ reinstall-git-bash-completion () {
   sudo mv /tmp/git-completion.bash /etc/bash_completion.d/git-completion.bash
 }
 
-# Return the current branch of the worktree.
+# @description Return the current branch of the worktree.
+#
+# @exitcode 0 Successful.
+# @exitcode 1 Unable to read current branch.
 __get_local_branch() {
   LOCAL_BRANCH="$(git branch --show-current 2>/dev/null)"
   if [ $? -ne 0 ] ; then
