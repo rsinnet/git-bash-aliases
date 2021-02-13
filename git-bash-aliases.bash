@@ -236,7 +236,26 @@ __get_local_branch() {
   echo "${LOCAL_BRANCH}"
 }
 
+# @description Show a sorted list of objects in the Git database.
+#
+# @stdout A list of objects sorted by size in descending order
+#
+# @exitcode 0 Successful.
+list-git-objects() {
+  local -r batch_check='%(objecttype) %(objectname) %(objectsize) %(rest)'
+  git rev-list --objects --all \
+    | git cat-file --batch-check="${batch_check}" \
+    | sed -n 's/^blob //p' \
+    | sort --numeric-sort --key=2 \
+    | cut -c 1-12,41- \
+    | $(command -v gnumfmt || echo numfmt) \
+        --field=2 --to=iec-i --suffix=B \
+        --padding=7 --round=nearest
+}
+
 __glo_complete() {
   __git_complete_refs --cur="${COMP_WORDS[COMP_CWORD]}" --sfx=""
 }
 complete -F __glo_complete -o default glo
+complete -F __glo_complete -o default gria
+complete -F __glo_complete -o default gds
