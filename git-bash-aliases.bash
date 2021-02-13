@@ -241,7 +241,9 @@ __get_local_branch() {
 # @stdout A list of objects sorted by size in descending order
 #
 # @exitcode 0 Successful.
-list-git-objects() {
+#
+# @see https://stackoverflow.com/a/42544963/2001889
+gba-list-objects() {
   local -r batch_check='%(objecttype) %(objectname) %(objectsize) %(rest)'
   git rev-list --objects --all \
     | git cat-file --batch-check="${batch_check}" \
@@ -253,6 +255,58 @@ list-git-objects() {
         --padding=7 --round=nearest
 }
 
+# @description Show git commit hash for the specified file path and hash.
+#
+# Optionally, specificy a hash for a specific version of the file.
+#
+# @arg $1 The path to the file, relative to the root of the repository.
+# @arg $2 (Optional) The has for the version of interest.
+#
+# @example
+#     gba-find-commit path/to.file
+#     gba-find-commit path/to.file 21339ea0c4ce
+#
+# @exitcode 0 Successful.
+# @exitcode 1 Incorrect number of arguments.
+#
+# @see https://stackoverflow.com/a/32611564/2001889
+gba-find-commit() {
+  [[ $# -lt 1 ]] && (>&2 echo "Too few arguments ($# < 1)") && return 1 || true
+  [[ $# -gt 2 ]] && (>&2 echo "Too many arguments ($# > 2)") && return 1 || true
+
+  local -r fpath="$1"
+  [[ $# == 2 ]] && hash_filter=( grep -q "$2" ) || hash_filter=( cat )
+
+  local -r gitcmd="git ls-tree % -- \"${fpath}\" | ${hash_filter[@]} && echo %"
+  git log --all --pretty=format:%H -- "${fpath}" \
+    | xargs -n1 -I% bash -c "${gitcmd}"
+}
+
+# @description Show git log for the specified file path and hash.
+#
+# Optionally, specificy a hash for a specific version of the file.
+#
+# @arg $1 The path to the file, relative to the root of the repository.
+# @arg $2 (Optional) The has for the version of interest.
+#
+# @example
+#     gba-show-commit path/to.file
+#     gba-show-commit path/to.file 21339ea0c4ce
+#
+# @exitcode 0 Successful.
+# @exitcode 1 Incorrect number of arguments.
+# @exitcode 2 Object not found.
+gba-show-commit() {
+  local -r commit="$(gba-find-commit "$@")"
+  if [[ -z "${commit}" ]] ; then
+    (>&2 echo "Object $1 with hash $2 not found")
+    return 2
+  fi
+  git log -n1 "${commit}"
+}
+
+
+# @internal
 __glo_complete() {
   __git_complete_refs --cur="${COMP_WORDS[COMP_CWORD]}" --sfx=""
 }
