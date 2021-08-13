@@ -156,6 +156,17 @@ gdo() {
   git diff "${ORIGIN_BRANCH}" "$@"
 }
 
+# @description `git commit --fixup=$(git diff --staged --name-only HEAD)`
+#
+# @example gfl
+#
+# Mnemonic: *git fixup last*
+gfl() {
+  git commit --fixup="$(
+    git diff --staged --name-only HEAD | xargs git rev-list -1 HEAD --
+  )"
+}
+
 # @description `git diff --stat` with the branch of the same name on `origin`
 #
 # @example
