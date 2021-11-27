@@ -317,6 +317,7 @@ gba-show-commit() {
   git log -n1 "${commit}"
 }
 
+_completion_loader git || true
 
 # @internal
 __glo_complete() {
